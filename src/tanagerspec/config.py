@@ -37,15 +37,39 @@ ABSORPTION_MASKS_NM: list[tuple[float, float]] = [
 # threshold, not a scientific parameter.
 DEFAULT_MIN_SRF_COVERAGE: float = 0.5
 
-# --- STAC endpoints --------------------------------------------------------
-# Planet Open STAC catalog serving Tanager scenes. NOT confirmed yet — left
-# as None on purpose so query functions raise a clear error instead of hitting
-# an invented URL. TODO: set from Planet's Open Data Competition documentation.
-TANAGER_STAC_URL: str | None = None
-TANAGER_COLLECTION: str | None = None
+# --- Planet Tanager open data ----------------------------------------------
+# The Tanager open data is a STATIC STAC catalog (not a STAC API): it is
+# traversed by walking child collections, not via a /search endpoint. The
+# child collections are the scene categories (agriculture, urban, fire, ...).
+# Public, CC BY 4.0. Verified against the live catalog 2026-06-06.
+TANAGER_STAC_URL: str = "https://www.planet.com/data/stac/tanager-core-imagery/catalog.json"
 
-# EMIT L2A reflectance via the NASA LP DAAC STAC (used for the cross-sensor
-# tie-breaker comparison). The endpoint is public; the collection version
-# string should still be confirmed. TODO: confirm collection id/version.
+# Child-collection ids in the catalog, i.e. the scene categories.
+TANAGER_CATEGORIES: tuple[str, ...] = (
+    "agriculture",
+    "urban",
+    "fire",
+    "snow-ice",
+    "natural-lands",
+    "coastal-water-bodies",
+    "energy-mining",
+    "GHG-plumes",
+    "ROCX2025",
+)
+
+# Asset keys on each item. Surface reflectance and radiance are each offered as
+# "basic" (georeferenced, unprojected) and "ortho" (orthorectified, projected)
+# HDF5 (HDF-EOS5) products. The orthorectified surface-reflectance product is
+# the default for spatial analysis (projected; ready for georeferenced output).
+TANAGER_SR_ASSET: str = "ortho_sr_hdf5"
+TANAGER_RADIANCE_ASSET: str = "ortho_radiance_hdf5"
+
+# HDF-EOS grid + reflectance field inside the SR HDF5, and its fill value.
+TANAGER_HDF5_GRID: str = "HYP"
+TANAGER_SR_FIELD: str = "surface_reflectance"
+TANAGER_SR_FILL_VALUE: float = -9999.0
+
+# EMIT L2A reflectance via the NASA LP DAAC STAC (a real STAC API; used for the
+# cross-sensor tie-breaker comparison). TODO: confirm collection id/version.
 EMIT_STAC_URL: str = "https://cmr.earthdata.nasa.gov/stac/LPCLOUD"
 EMIT_COLLECTION: str = "EMITL2ARFL_001"

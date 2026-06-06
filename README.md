@@ -17,13 +17,26 @@ project repo.
 
 | Module | Responsibility |
 |---|---|
-| `stac` | Query Tanager / EMIT scenes; build a scene inventory GeoDataFrame |
-| `io` | Load georeferenced reflectance cubes (rioxarray); export compressed GeoTIFFs |
+| `stac` | Traverse the Tanager **static** STAC catalog (category = child collection); query EMIT (STAC API); build a scene inventory GeoDataFrame |
+| `io` | Load the Tanager SR cube from HDF-EOS5 (`load_tanager_sr_hdf5`); load generic COG/EMIT cubes (`load_reflectance_cube`); export compressed GeoTIFFs |
 | `bands` | Validate the wavelength axis; map wavelength windows to band indices |
 | `mask` | Per-pixel invalid masks; set atmospheric absorption bands to NaN |
-| `srf` | Simulate Sentinel-2 bands by spectral-response-function convolution |
+| `srf` | Simulate Sentinel-2 bands by SRF convolution; bundled ESA S2A/S2B SRFs (`load_s2_srf`) |
 | `sample` | Reproducible, optionally spatial-block-stratified pixel sampling |
-| `config` | Shared constants: `SEED`, absorption windows, STAC endpoints |
+| `config` | Shared constants: `SEED`, absorption windows, Tanager catalog + asset keys, EMIT endpoint |
+
+## The Tanager open data
+
+The open data is a **static** STAC catalog at
+`config.TANAGER_STAC_URL`, whose child collections are the scene categories
+(agriculture, urban, fire, …). `stac.query_tanager_scenes()` walks it (there is
+no search API) and tags each item with its category. Each item offers surface
+reflectance and radiance as `basic_*`/`ortho_*` **HDF-EOS5 HDF5** assets;
+the default is `ortho_sr_hdf5` (orthorectified surface reflectance, EPSG UTM,
+30 m, fill −9999). `io.load_tanager_sr_hdf5()` reads that cube and takes the
+426 band-center wavelengths from the file's own dataset attributes (authoritative,
+not inferred). Download the `.h5` from the asset href first; it is not read over
+HTTP.
 
 ## Install
 
@@ -63,29 +76,26 @@ same constant in every band — the correctness check exercised in the tests.
 This is convolution with the published response, **not** averaging nearby
 bands.
 
-## Values you must supply (not invented here)
+## Reference values — resolved vs. still to confirm
 
-This package deliberately ships **no fabricated reference values**. Before the
-consuming projects can run end to end, confirm and set:
+This package ships **no fabricated reference values**. Status:
 
-- **Planet Open STAC endpoint + Tanager collection id** —
-  `config.TANAGER_STAC_URL` and `config.TANAGER_COLLECTION` are `None`. The
-  query helpers raise until these are set (from Planet's Open Data Competition
-  documentation). The EMIT endpoint is the public LP DAAC STAC; confirm its
-  collection version.
-- **Real Sentinel-2 spectral response functions** — `load_srf_csv()` reads a
-  CSV (wavelength column + one column per band) that the consuming project
-  commits with a provenance note (source URL, ESA document id, download date).
-  `gaussian_srf()` builds an *approximation* from band centers/widths you pass
-  explicitly; it is for tests and sanity checks only and **must not** be used
-  for final results.
-- **Tanager wavelength vector** — read from the product at load time;
-  `load_reflectance_cube()` validates it is strictly increasing. The
-  band-metadata reader is best-effort (TODO: confirm where the product stores
-  wavelengths); otherwise pass `wavelengths=` explicitly.
-- **Absorption windows** — `config.ABSORPTION_MASKS_NM` follows the workspace
-  convention (O2 A-band + two H2O bands); verify the edges against the actual
-  Tanager grid.
+- **Tanager STAC + product** — resolved (verified against the live catalog
+  2026-06-06): `config.TANAGER_STAC_URL` points at the static catalog; the SR
+  product is `ortho_sr_hdf5`. EMIT uses the public LP DAAC STAC API
+  (`config.EMIT_*`); the collection version string is still worth confirming.
+- **Sentinel-2 SRFs** — resolved: the real ESA S2A/S2B response functions are
+  bundled as package data (`tanagerspec/data/`, see its `SOURCE.md`) and loaded
+  via `load_s2_srf("S2A")`. `gaussian_srf()` remains an *approximation* for
+  tests/sanity checks only and **must not** be used for final results;
+  `load_srf_csv()` stays available for a user-supplied table.
+- **Tanager wavelengths** — resolved: `load_tanager_sr_hdf5()` reads the 426
+  band-center wavelengths from the HDF5 dataset's own `wavelengths` attribute
+  (authoritative). For non-Tanager rasters, `load_reflectance_cube()` never
+  infers wavelengths from metadata — pass `wavelengths=` explicitly.
+- **Absorption windows** — still to confirm: `config.ABSORPTION_MASKS_NM`
+  follows the workspace convention (O2 A-band + two H2O bands); verify the edges
+  against the actual Tanager grid before final results.
 
 ## Conventions
 

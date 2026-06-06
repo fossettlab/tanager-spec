@@ -19,8 +19,9 @@ repositories, not here.
 from __future__ import annotations
 
 from . import bands, config, io, mask, sample, srf, stac
+from .io import load_reflectance_cube, load_tanager_sr_hdf5
 from .sample import SampleResult, sample_pixels
-from .srf import SpectralResponse, gaussian_srf, load_srf_csv, simulate
+from .srf import SpectralResponse, gaussian_srf, load_s2_srf, load_srf_csv, simulate
 
 __version__ = "0.1.0"
 
@@ -36,7 +37,10 @@ __all__ = [
     "sample_pixels",
     "SpectralResponse",
     "gaussian_srf",
+    "load_s2_srf",
     "load_srf_csv",
+    "load_reflectance_cube",
+    "load_tanager_sr_hdf5",
     "simulate",
     "__version__",
 ]

@@ -222,3 +222,22 @@ def test_inf_channel_does_not_contaminate(source_wavelengths):
 def test_spectral_response_rejects_single_point():
     with pytest.raises(ValueError, match="at least 2 points"):
         srf.SpectralResponse(["a"], np.array([500.0]), np.array([[1.0]]))
+
+
+@pytest.mark.parametrize("platform", ["S2A", "S2B"])
+def test_load_s2_srf_bundled(platform):
+    """The bundled ESA SRF loads, has the 13 MSI bands, and is valid."""
+    response = srf.load_s2_srf(platform)
+    assert response.band_names == ["B1", "B2", "B3", "B4", "B5", "B6", "B7", "B8",
+                                   "B8A", "B9", "B10", "B11", "B12"]
+    assert response.wavelength_nm.min() <= 400 and response.wavelength_nm.max() >= 2400
+    assert response.platform == platform
+    # constant reflectance -> same constant in every band, using the real SRF
+    wl = np.linspace(400.0, 2400.0, 400)
+    out = srf.simulate(np.full((1, wl.size), 0.2), wl, response)
+    assert np.allclose(out, 0.2, atol=1e-6)
+
+
+def test_load_s2_srf_bad_platform():
+    with pytest.raises(ValueError, match="S2A.*S2B|platform"):
+        srf.load_s2_srf("S2Z")

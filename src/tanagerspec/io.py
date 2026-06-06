@@ -8,6 +8,7 @@ transform from the source scene — it never invents georeferencing.
 from __future__ import annotations
 
 import logging
+import re
 from pathlib import Path
 
 import numpy as np
@@ -16,6 +17,7 @@ import rioxarray  # noqa: F401  (registers the .rio accessor)
 import xarray as xr
 from rasterio.transform import Affine
 
+from . import config
 from .bands import assert_strictly_increasing
 
 logger = logging.getLogger(__name__)
@@ -72,6 +74,162 @@ def load_reflectance_cube(
         logger.warning("no wavelengths supplied; caller must provide them explicitly")
 
     logger.info("loaded cube %s with %d bands", tuple(cube.sizes.values()), cube.sizes["band"])
+    return cube, wavelengths
+
+
+def _parse_hdfeos_utm_grid(
+    struct_metadata: str, grid_name: str
+) -> tuple[str, Affine, tuple[int, int]]:
+    """Parse CRS, affine transform, and shape from an HDF-EOS5 StructMetadata.
+
+    Parameters
+    ----------
+    struct_metadata : str
+        Contents of ``HDFEOS INFORMATION/StructMetadata.0``.
+    grid_name : str
+        Grid whose georeferencing to read (e.g. ``"HYP"``).
+
+    Returns
+    -------
+    crs : str
+        EPSG code string, e.g. ``"EPSG:32637"``.
+    transform : affine.Affine
+        Pixel->CRS affine transform (upper-left origin).
+    shape : tuple of (int, int)
+        ``(n_rows, n_cols)`` = ``(YDim, XDim)``.
+
+    Raises
+    ------
+    NotImplementedError
+        If the grid projection is not UTM (the only Tanager case seen).
+    ValueError
+        If required fields are missing.
+    """
+
+    # Scope parsing to the GROUP=GRID_N block whose GridName matches, so a
+    # multi-grid file cannot silently attach another grid's georeferencing.
+    block = None
+    for chunk in re.split(r"GROUP=GRID_\d+", struct_metadata):
+        m = re.search(r'GridName="([^"]+)"', chunk)
+        if m is not None and m.group(1) == grid_name:
+            block = chunk
+            break
+    if block is None:
+        raise ValueError(f"grid {grid_name!r} not found in StructMetadata")
+
+    def _find(key: str) -> str:
+        m = re.search(rf"\b{key}=([^\n]+)", block)
+        if m is None:
+            raise ValueError(f"{key} not found in StructMetadata grid {grid_name!r}")
+        return m.group(1).strip()
+
+    projection = _find("Projection")
+    if "UTM" not in projection.upper():
+        raise NotImplementedError(
+            f"only UTM grids are supported; StructMetadata says Projection={projection}"
+        )
+    xdim = int(_find("XDim"))
+    ydim = int(_find("YDim"))
+    ulx, uly = (float(v) for v in re.findall(r"[-\d.]+", _find("UpperLeftPointMtrs")))
+    lrx, lry = (float(v) for v in re.findall(r"[-\d.]+", _find("LowerRightMtrs")))
+    zone = int(_find("ZoneCode"))
+    # GCTP encodes the southern hemisphere as a negative zone code.
+    epsg = (32600 if zone > 0 else 32700) + abs(zone)
+    px = (lrx - ulx) / xdim
+    py = (uly - lry) / ydim
+    transform = Affine(px, 0.0, ulx, 0.0, -py, uly)
+    return f"EPSG:{epsg}", transform, (ydim, xdim)
+
+
+def load_tanager_sr_hdf5(
+    path: str | Path,
+    field: str | None = None,
+    grid: str | None = None,
+    masked: bool = True,
+    bands: slice | None = None,
+    fill_value: float | None = None,
+) -> tuple[xr.DataArray, np.ndarray]:
+    """Load a Tanager surface-reflectance cube from an ortho/basic SR HDF5 file.
+
+    Reads the HDF-EOS5 surface-reflectance grid written by Planet's Tanager
+    products. Wavelengths and the fill value come from the dataset's own
+    attributes (authoritative, not inferred); CRS and transform are parsed from
+    the file's StructMetadata.
+
+    Parameters
+    ----------
+    path : str or Path
+        Local path to the ``*_ortho_sr_hdf5.h5`` (or basic SR) file. Download
+        it first from the STAC asset href; HDF5 is not read over HTTP here.
+    field : str, optional
+        Reflectance field name. Defaults to ``config.TANAGER_SR_FIELD``.
+    grid : str, optional
+        HDF-EOS grid name. Defaults to ``config.TANAGER_HDF5_GRID``.
+    masked : bool
+        Replace the fill value with ``NaN``.
+    bands : slice, optional
+        Optional band subset (the full cube is ~1.1 GB in memory for a scene;
+        pass a slice to limit what is read).
+    fill_value : float, optional
+        Override the fill value. If ``None``, it is read from the dataset's
+        ``_FillValue`` attribute; if that attribute is absent, a ``ValueError``
+        is raised rather than guessing one.
+
+    Returns
+    -------
+    cube : xr.DataArray
+        Dims ``("band", "y", "x")`` with ``band`` = wavelength (nm), and CRS /
+        transform on the ``.rio`` accessor.
+    wavelengths : np.ndarray
+        Band-center wavelengths (nm), strictly increasing.
+    """
+    import h5py
+
+    field = field or config.TANAGER_SR_FIELD
+    grid = grid or config.TANAGER_HDF5_GRID
+    with h5py.File(path, "r") as f:
+        ds = f[f"HDFEOS/GRIDS/{grid}/Data Fields/{field}"]
+        if "wavelengths" not in ds.attrs:
+            raise ValueError(f"{field} has no 'wavelengths' attribute in {path}")
+        wavelengths = np.asarray(ds.attrs["wavelengths"], dtype=float)
+        if fill_value is not None:
+            fill = float(fill_value)
+        elif "_FillValue" in ds.attrs:
+            fill = float(ds.attrs["_FillValue"])
+        else:
+            raise ValueError(
+                f"{field} has no '_FillValue' attribute in {path}; pass fill_value= "
+                "explicitly rather than assume one"
+            )
+        data = (ds[bands, :, :] if bands is not None else ds[...]).astype("float32")
+        if bands is not None:
+            wavelengths = wavelengths[bands]
+        struct = f["HDFEOS INFORMATION/StructMetadata.0"][()]
+    if isinstance(struct, bytes):
+        struct = struct.decode(errors="replace")
+
+    crs, transform, (ny, nx) = _parse_hdfeos_utm_grid(struct, grid)
+    if data.shape[1:] != (ny, nx):
+        raise ValueError(
+            f"data spatial shape {data.shape[1:]} != StructMetadata grid {(ny, nx)}"
+        )
+    if masked:
+        data = np.where(data == fill, np.nan, data)
+    assert_strictly_increasing(wavelengths)
+
+    # Cell-center coordinates from the upper-left-origin transform.
+    xs = transform.c + (np.arange(nx) + 0.5) * transform.a
+    ys = transform.f + (np.arange(ny) + 0.5) * transform.e
+    cube = xr.DataArray(
+        data,
+        dims=("band", "y", "x"),
+        coords={"band": wavelengths, "y": ys, "x": xs},
+    )
+    cube = cube.rio.write_crs(crs).rio.write_transform(transform)
+    logger.info(
+        "loaded Tanager SR cube %s (%d bands) %s from %s",
+        (ny, nx), wavelengths.size, crs, path,
+    )
     return cube, wavelengths
 
 

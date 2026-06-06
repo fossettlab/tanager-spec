@@ -253,6 +253,39 @@ def load_srf_csv(
     )
 
 
+def load_s2_srf(platform: str = "S2A") -> SpectralResponse:
+    """Load the bundled ESA Sentinel-2 spectral response functions.
+
+    Convenience wrapper over :func:`load_srf_csv` for the SRF tables shipped as
+    package data (see ``tanagerspec/data/SOURCE.md`` for provenance).
+
+    Parameters
+    ----------
+    platform : str
+        ``"S2A"`` or ``"S2B"``.
+
+    Returns
+    -------
+    SpectralResponse
+    """
+    from importlib.resources import files
+
+    platform = platform.upper()
+    if platform not in ("S2A", "S2B"):
+        raise ValueError(f"platform must be 'S2A' or 'S2B', got {platform!r}")
+    path = files("tanagerspec.data") / f"{platform}_SRF.csv"
+    with path.open("rb") as fh:  # works whether installed as files or in a zip
+        df = pd.read_csv(fh)
+    band_columns = [c for c in df.columns if c != "wavelength_nm"]
+    return SpectralResponse(
+        band_names=band_columns,
+        wavelength_nm=df["wavelength_nm"].to_numpy(dtype=float),
+        response=df[band_columns].to_numpy(dtype=float).T,
+        platform=platform,
+        source="ESA S2-SRF COPE-GSEG-EOPG-TN-15-0007 (USGS mirror); see data/SOURCE.md",
+    )
+
+
 def simulate(
     spectra: np.ndarray,
     source_wavelengths: np.ndarray,

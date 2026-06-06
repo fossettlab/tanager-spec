@@ -4,7 +4,7 @@ import math
 
 import pandas as pd
 
-from tanagerspec import config, stac
+from tanager_spec import config, stac
 
 
 def test_tanager_catalog_url_configured():

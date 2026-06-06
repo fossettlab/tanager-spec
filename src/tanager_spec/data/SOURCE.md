@@ -15,7 +15,7 @@ Sentinel-2A and Sentinel-2B MSI.
   explicit zeros (none required imputation).
 - **Grid:** 300–2600 nm at 1 nm spacing (2301 rows), responses in [0, 1].
 
-Load with `tanagerspec.srf.load_s2_srf("S2A")` (or `"S2B"`).
+Load with `tanager_spec.srf.load_s2_srf("S2A")` (or `"S2B"`).
 
 To update to a newer ESA release (e.g. v4.0, which adds S2C), re-export the
 same columns and bump this note.

@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from tanagerspec import srf
+from tanager_spec import srf
 
 
 def _toy_srf(source_wavelengths: np.ndarray) -> srf.SpectralResponse:

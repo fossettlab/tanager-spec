@@ -132,7 +132,7 @@ def query_tanager_scenes(
         set.
     categories : list of str, optional
         Restrict to these child-collection ids (see
-        :data:`tanagerspec.config.TANAGER_CATEGORIES`). ``None`` = all.
+        :data:`tanager_spec.config.TANAGER_CATEGORIES`). ``None`` = all.
     max_cloud_cover : float, optional
         Keep only items whose ``cloud_percent`` (Planet; falls back to
         ``eo:cloud_cover``) is <= this. Items without a cloud value are

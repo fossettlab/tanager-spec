@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 from conftest import make_cube
 
-from tanagerspec import mask
+from tanager_spec import mask
 
 
 def test_mask_absorption_bands_sets_nan_in_windows():
@@ -14,7 +14,7 @@ def test_mask_absorption_bands_sets_nan_in_windows():
     center = float(wl[6])
     windows = [(center - 5.0, center + 5.0)]
     out = mask.mask_absorption_bands(cube, wl, windows)
-    from tanagerspec.bands import indices_in_windows
+    from tanager_spec.bands import indices_in_windows
 
     in_win = indices_in_windows(wl, windows)
     assert in_win.any()

@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 from conftest import make_cube
 
-from tanagerspec import sample
+from tanager_spec import sample
 
 
 def test_sample_is_deterministic_with_seed():

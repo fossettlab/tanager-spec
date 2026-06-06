@@ -1,4 +1,4 @@
-"""Shared configuration constants for tanagerspec.
+"""Shared configuration constants for tanager_spec.
 
 Values that have a scientific or operational meaning are named here so the
 four consuming projects (tanager-spectralsep, tanager-anomaly,

@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
-title: "tanagerspec: shared data layer for Tanager hyperspectral methodology projects"
+title: "tanager-spec: shared data layer for Tanager hyperspectral methodology projects"
 authors:
   - family-names: Bradley
     given-names: Alex
@@ -8,4 +8,4 @@ authors:
     affiliation: "Department of Earth, Environmental, and Planetary Sciences, Washington University in St. Louis"
 version: 0.1.0
 license: MIT
-repository-code: "https://github.com/bradleylab/tanagerspec"
+repository-code: "https://github.com/bradleylab/tanager-spec"

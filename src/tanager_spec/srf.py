@@ -257,7 +257,7 @@ def load_s2_srf(platform: str = "S2A") -> SpectralResponse:
     """Load the bundled ESA Sentinel-2 spectral response functions.
 
     Convenience wrapper over :func:`load_srf_csv` for the SRF tables shipped as
-    package data (see ``tanagerspec/data/SOURCE.md`` for provenance).
+    package data (see ``tanager_spec/data/SOURCE.md`` for provenance).
 
     Parameters
     ----------
@@ -273,7 +273,7 @@ def load_s2_srf(platform: str = "S2A") -> SpectralResponse:
     platform = platform.upper()
     if platform not in ("S2A", "S2B"):
         raise ValueError(f"platform must be 'S2A' or 'S2B', got {platform!r}")
-    path = files("tanagerspec.data") / f"{platform}_SRF.csv"
+    path = files("tanager_spec.data") / f"{platform}_SRF.csv"
     with path.open("rb") as fh:  # works whether installed as files or in a zip
         df = pd.read_csv(fh)
     band_columns = [c for c in df.columns if c != "wavelength_nm"]

@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from tanagerspec import bands
+from tanager_spec import bands
 
 
 def test_strictly_increasing_accepts_increasing():

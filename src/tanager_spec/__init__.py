@@ -1,4 +1,4 @@
-"""tanagerspec: shared data layer for the Tanager methodology projects.
+"""tanager_spec: shared data layer for the Tanager methodology projects.
 
 Provides the primitives common to tanager-spectralsep, tanager-anomaly,
 tanager-featureimp, and tanager-infotheory:

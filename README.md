@@ -1,4 +1,4 @@
-# tanagerspec
+# tanager-spec
 
 Shared data layer for the four Tanager hyperspectral-vs-multispectral
 methodology projects in this workspace:
@@ -49,7 +49,7 @@ uv run ruff check src tests
 Consuming projects add it as an editable dependency, e.g.
 
 ```bash
-uv add --editable ../tanagerspec
+uv add --editable ../tanager-spec
 ```
 
 ## The Sentinel-2 simulation
@@ -85,7 +85,7 @@ This package ships **no fabricated reference values**. Status:
   product is `ortho_sr_hdf5`. EMIT uses the public LP DAAC STAC API
   (`config.EMIT_*`); the collection version string is still worth confirming.
 - **Sentinel-2 SRFs** — resolved: the real ESA S2A/S2B response functions are
-  bundled as package data (`tanagerspec/data/`, see its `SOURCE.md`) and loaded
+  bundled as package data (`tanager_spec/data/`, see its `SOURCE.md`) and loaded
   via `load_s2_srf("S2A")`. `gaussian_srf()` remains an *approximation* for
   tests/sanity checks only and **must not** be used for final results;
   `load_srf_csv()` stays available for a user-supplied table.

@@ -6,7 +6,7 @@ import pytest
 import rasterio
 from rasterio.transform import from_origin
 
-from tanagerspec import io
+from tanager_spec import io
 
 
 def _write_synthetic_sr_h5(

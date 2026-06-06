@@ -135,7 +135,7 @@ def mask_absorption_bands(
         Band-center wavelengths (nm), length matching the band dimension.
     windows : list of (float, float), optional
         Wavelength windows (nm) to mask. Defaults to
-        :data:`tanagerspec.config.ABSORPTION_MASKS_NM`.
+        :data:`tanager_spec.config.ABSORPTION_MASKS_NM`.
 
     Returns
     -------

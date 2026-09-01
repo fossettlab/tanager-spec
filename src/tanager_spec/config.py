@@ -24,7 +24,7 @@ SEED: int = 42
 # two H2O bands) but the exact edges should still be checked against the actual
 # Tanager wavelength grid before final results. TODO: verify edges vs. grid.
 ABSORPTION_MASKS_NM: list[tuple[float, float]] = [
-    (755.0, 770.0),    # O2 A-band
+    (755.0, 770.0),  # O2 A-band
     (1350.0, 1450.0),  # H2O
     (1800.0, 1950.0),  # H2O
 ]

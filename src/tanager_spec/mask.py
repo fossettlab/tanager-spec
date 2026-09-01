@@ -46,9 +46,7 @@ def require_band_y_x(cube: xr.DataArray) -> xr.DataArray:
     """
     missing = [d for d in _REQUIRED_DIMS if d not in cube.dims]
     if missing:
-        raise ValueError(
-            f"cube is missing required dims {missing}; has {tuple(cube.dims)}"
-        )
+        raise ValueError(f"cube is missing required dims {missing}; has {tuple(cube.dims)}")
     if tuple(cube.dims) != _REQUIRED_DIMS:
         cube = cube.transpose(*_REQUIRED_DIMS)
     return cube
@@ -147,9 +145,7 @@ def mask_absorption_bands(
     cube = require_band_y_x(cube)
     wl = np.asarray(wavelengths, dtype=float)
     if wl.size != cube.sizes["band"]:
-        raise ValueError(
-            f"wavelengths length {wl.size} != band dimension {cube.sizes['band']}"
-        )
+        raise ValueError(f"wavelengths length {wl.size} != band dimension {cube.sizes['band']}")
     in_window = indices_in_windows(wl, windows)
     n_masked = int(in_window.sum())
     logger.info("masking %d absorption-band channels across %d windows", n_masked, len(windows))

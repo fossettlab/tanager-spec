@@ -59,9 +59,7 @@ def load_reflectance_cube(
     if wavelengths is not None:
         wl = np.asarray(wavelengths, dtype=float)
         if wl.size != cube.sizes["band"]:
-            raise ValueError(
-                f"wavelengths length {wl.size} != band count {cube.sizes['band']}"
-            )
+            raise ValueError(f"wavelengths length {wl.size} != band count {cube.sizes['band']}")
         assert_strictly_increasing(wl)
         cube = cube.assign_coords(band=wl)
         wavelengths = wl
@@ -210,9 +208,7 @@ def load_tanager_sr_hdf5(
 
     crs, transform, (ny, nx) = _parse_hdfeos_utm_grid(struct, grid)
     if data.shape[1:] != (ny, nx):
-        raise ValueError(
-            f"data spatial shape {data.shape[1:]} != StructMetadata grid {(ny, nx)}"
-        )
+        raise ValueError(f"data spatial shape {data.shape[1:]} != StructMetadata grid {(ny, nx)}")
     if masked:
         data = np.where(data == fill, np.nan, data)
     assert_strictly_increasing(wavelengths)
@@ -228,7 +224,10 @@ def load_tanager_sr_hdf5(
     cube = cube.rio.write_crs(crs).rio.write_transform(transform)
     logger.info(
         "loaded Tanager SR cube %s (%d bands) %s from %s",
-        (ny, nx), wavelengths.size, crs, path,
+        (ny, nx),
+        wavelengths.size,
+        crs,
+        path,
     )
     return cube, wavelengths
 

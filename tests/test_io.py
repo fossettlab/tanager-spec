@@ -176,8 +176,15 @@ def test_load_reflectance_cube_roundtrip(tmp_path):
     transform = from_origin(500000, 4000000, 30, 30)
     src_path = tmp_path / "cube.tif"
     with rasterio.open(
-        src_path, "w", driver="GTiff", height=ny, width=nx, count=n_band,
-        dtype="float32", crs="EPSG:32613", transform=transform,
+        src_path,
+        "w",
+        driver="GTiff",
+        height=ny,
+        width=nx,
+        count=n_band,
+        dtype="float32",
+        crs="EPSG:32613",
+        transform=transform,
     ) as dst:
         dst.write(data)
 
@@ -193,8 +200,15 @@ def test_load_reflectance_cube_rejects_non_increasing_wavelengths(tmp_path):
     data = np.zeros((3, 4, 4), dtype="float32")
     src_path = tmp_path / "c.tif"
     with rasterio.open(
-        src_path, "w", driver="GTiff", height=4, width=4, count=3,
-        dtype="float32", crs="EPSG:4326", transform=from_origin(0, 0, 1, 1),
+        src_path,
+        "w",
+        driver="GTiff",
+        height=4,
+        width=4,
+        count=3,
+        dtype="float32",
+        crs="EPSG:4326",
+        transform=from_origin(0, 0, 1, 1),
     ) as dst:
         dst.write(data)
     with pytest.raises(ValueError, match="strictly increasing"):
@@ -205,8 +219,15 @@ def test_load_reflectance_cube_without_wavelengths_returns_none(tmp_path):
     data = np.zeros((3, 4, 4), dtype="float32")
     src_path = tmp_path / "c.tif"
     with rasterio.open(
-        src_path, "w", driver="GTiff", height=4, width=4, count=3,
-        dtype="float32", crs="EPSG:4326", transform=from_origin(0, 0, 1, 1),
+        src_path,
+        "w",
+        driver="GTiff",
+        height=4,
+        width=4,
+        count=3,
+        dtype="float32",
+        crs="EPSG:4326",
+        transform=from_origin(0, 0, 1, 1),
     ) as dst:
         dst.write(data)
     cube, wl = io.load_reflectance_cube(src_path)

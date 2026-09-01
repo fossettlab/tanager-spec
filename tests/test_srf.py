@@ -166,9 +166,7 @@ def test_spectral_response_rejects_negative():
 
 def test_spectral_response_rejects_non_finite():
     with pytest.raises(ValueError, match="non-finite"):
-        srf.SpectralResponse(
-            ["a"], np.array([400.0, 500.0, 600.0]), np.array([[0.1, np.inf, 0.3]])
-        )
+        srf.SpectralResponse(["a"], np.array([400.0, 500.0, 600.0]), np.array([[0.1, np.inf, 0.3]]))
 
 
 def test_spectral_response_rejects_zero_total_band():
@@ -228,8 +226,21 @@ def test_spectral_response_rejects_single_point():
 def test_load_s2_srf_bundled(platform):
     """The bundled ESA SRF loads, has the 13 MSI bands, and is valid."""
     response = srf.load_s2_srf(platform)
-    assert response.band_names == ["B1", "B2", "B3", "B4", "B5", "B6", "B7", "B8",
-                                   "B8A", "B9", "B10", "B11", "B12"]
+    assert response.band_names == [
+        "B1",
+        "B2",
+        "B3",
+        "B4",
+        "B5",
+        "B6",
+        "B7",
+        "B8",
+        "B8A",
+        "B9",
+        "B10",
+        "B11",
+        "B12",
+    ]
     assert response.wavelength_nm.min() <= 400 and response.wavelength_nm.max() >= 2400
     assert response.platform == platform
     # constant reflectance -> same constant in every band, using the real SRF

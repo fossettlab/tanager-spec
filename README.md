@@ -1,11 +1,8 @@
 # tanager-spec
 
-Shared data layer for the four Tanager hyperspectral-vs-multispectral
-methodology projects in this workspace:
-[`tanager-spectralsep`](../tanager-spectralsep),
-[`tanager-anomaly`](../tanager-anomaly),
-[`tanager-featureimp`](../tanager-featureimp), and
-[`tanager-infotheory`](../tanager-infotheory).
+Shared data layer for Tanager hyperspectral-versus-multispectral research,
+including the public mineral-mapping workflow
+[`tanager-rocks`](https://github.com/fossettlab/tanager-rocks).
 
 All four answer variants of *"what does full Tanager VSWIR give you that a
 simulated Sentinel-2 does not?"* and so repeat the same upstream steps. This
@@ -41,16 +38,29 @@ HTTP.
 ## Install
 
 ```bash
-uv sync --extra dev      # create .venv and install with dev tools
-uv run pytest            # run the test suite
-uv run ruff check src tests
+uv add "tanager-spec==0.1.0"
 ```
 
-Consuming projects add it as an editable dependency, e.g.
+For an editable development checkout, clone this repository beside the
+consuming project and run:
 
 ```bash
 uv add --editable ../tanager-spec
 ```
+
+Contributor setup:
+
+```bash
+uv sync --extra dev
+uv run pytest
+uv run ruff check src tests
+uv run ruff format --check src tests
+```
+
+The package currently bundles ESA Sentinel-2A/Sentinel-2B spectral-response
+tables. Public artifact publication remains blocked until their redistribution
+terms are explicitly resolved; source provenance is recorded in
+`src/tanager_spec/data/SOURCE.md`.
 
 ## The Sentinel-2 simulation
 

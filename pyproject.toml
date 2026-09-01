@@ -28,7 +28,7 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/bradleylab/tanager-spec"
+Homepage = "https://github.com/fossettlab/tanager-spec"
 
 [build-system]
 requires = ["hatchling"]

@@ -44,7 +44,7 @@ def _passes_filters(
     """
     if bbox is not None and (item_bbox is None or not _bbox_overlaps(bbox, item_bbox)):
         return False
-    if (start is not None or end is not None):
+    if start is not None or end is not None:
         if item_dt is None:
             return False
         if start is not None and item_dt < start:

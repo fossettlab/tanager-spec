@@ -73,9 +73,7 @@ def test_rejects_mismatched_invalid_shape():
 
     cube, _ = make_cube(n_band=3, ny=6, nx=6)
     # dims are ("y", "x") but the y extent is wrong -> would broadcast silently.
-    bad_invalid = xr.DataArray(
-        np.zeros((1, 6), dtype=bool), dims=("y", "x")
-    )
+    bad_invalid = xr.DataArray(np.zeros((1, 6), dtype=bool), dims=("y", "x"))
     with pytest.raises(ValueError, match="spatial shape"):
         sample.sample_pixels(cube, invalid=bad_invalid, n_pixels=4)
 

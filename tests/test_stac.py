@@ -30,10 +30,24 @@ def test_passes_filters_bbox():
 
 def test_passes_filters_datetime():
     f = stac._passes_filters
-    assert f(None, "2025-06-01T00:00:00Z", None, bbox=None, start="2025-01-01", end="2025-12-31",
-             max_cloud_cover=None)
-    assert not f(None, "2024-01-01T00:00:00Z", None, bbox=None, start="2025-01-01", end=None,
-                 max_cloud_cover=None)
+    assert f(
+        None,
+        "2025-06-01T00:00:00Z",
+        None,
+        bbox=None,
+        start="2025-01-01",
+        end="2025-12-31",
+        max_cloud_cover=None,
+    )
+    assert not f(
+        None,
+        "2024-01-01T00:00:00Z",
+        None,
+        bbox=None,
+        start="2025-01-01",
+        end=None,
+        max_cloud_cover=None,
+    )
     # missing datetime under a datetime filter fails
     assert not f(None, None, None, bbox=None, start="2025-01-01", end=None, max_cloud_cover=None)
 

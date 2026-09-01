@@ -125,9 +125,7 @@ class SpectralResponse:
         target = np.asarray(target_wavelengths, dtype=float)
         out = np.empty((len(self.band_names), target.size), dtype=float)
         for i in range(len(self.band_names)):
-            out[i] = np.interp(
-                target, self.wavelength_nm, self.response[i], left=0.0, right=0.0
-            )
+            out[i] = np.interp(target, self.wavelength_nm, self.response[i], left=0.0, right=0.0)
         return out
 
 
@@ -356,9 +354,7 @@ def simulate(
     total_weight = weights.sum(axis=1)  # (n_target,)
     if np.any(~(total_weight > 0)):  # catches <= 0 and NaN total weight
         empty = [srf.band_names[i] for i in np.where(~(total_weight > 0))[0]]
-        logger.warning(
-            "SRF bands with no usable overlap on the source wavelength grid: %s", empty
-        )
+        logger.warning("SRF bands with no usable overlap on the source wavelength grid: %s", empty)
 
     # Treat only finite channels as valid so a stray +/-inf does not contaminate
     # other target bands through the matrix product.

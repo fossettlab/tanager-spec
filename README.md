@@ -2,7 +2,7 @@
 
 Shared data layer for Tanager hyperspectral-versus-multispectral research,
 including the public mineral-mapping workflow
-[`tanager-rocks`](https://github.com/fossettlab/tanager-rocks).
+[`tanager-minmap`](https://github.com/fossettlab/tanager-minmap).
 
 All four answer variants of *"what does full Tanager VSWIR give you that a
 simulated Sentinel-2 does not?"* and so repeat the same upstream steps. This
